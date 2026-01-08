@@ -10,7 +10,7 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
-from auth_app.scalekit_client import ScalekitClient
+from auth_app.scalekit_client import scalekit_client
 from auth_app.decorators import login_required, permission_required
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ def login_view(request):
     request.session.save()  # Explicitly save session to ensure state is persisted
     
     # Get authorization URL from Scalekit
-    client = ScalekitClient()
+    client = scalekit_client()
     auth_url = client.get_authorization_url(state=state)
     
     logger.debug(f"Generated OAuth state: {state[:10]}... (stored in session)")
@@ -93,7 +93,7 @@ def callback_view(request):
     
     try:
         # Exchange code for tokens
-        client = ScalekitClient()
+        client = scalekit_client()
         token_response = client.exchange_code_for_tokens(code)
         
         access_token = token_response.get('access_token')
@@ -192,7 +192,7 @@ def logout_view(request):
     # Get logout URL from Scalekit SDK
     if access_token:
         try:
-            client = ScalekitClient()
+            client = scalekit_client()
             logout_url = client.logout(access_token)
             # Redirect to Scalekit logout URL instead of just clearing session
             # This ensures proper logout on Scalekit side
@@ -284,7 +284,7 @@ def validate_token_view(request):
         })
     
     try:
-        client = ScalekitClient()
+        client = scalekit_client()
         user_info = client.get_user_info(access_token)
         
         return JsonResponse({
@@ -325,7 +325,7 @@ def refresh_token_view(request):
         })
     
     try:
-        client = ScalekitClient()
+        client = scalekit_client()
         token_response = client.refresh_access_token(refresh_token)
         
         # Update session with new tokens
@@ -367,7 +367,7 @@ def organization_settings_view(request):
     
     # Get access token to validate and show permissions
     access_token = token_data.get('access_token')
-    client = ScalekitClient()
+    client = scalekit_client()
     
     # Get token claims to show permissions
     claims = {}

@@ -5,7 +5,7 @@ Uses session-based storage (no database).
 import logging
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
-from auth_app.scalekit_client import ScalekitClient
+from auth_app.scalekit_client import scalekit_client
 from datetime import timedelta
 from django.utils import timezone
 
@@ -23,6 +23,7 @@ class ScalekitTokenRefreshMiddleware(MiddlewareMixin):
     3. Automatically refreshes the token if needed
     4. Updates the session with new token information
     """
+    
     
     def process_request(self, request):
         """
@@ -56,15 +57,15 @@ class ScalekitTokenRefreshMiddleware(MiddlewareMixin):
                 logger.error(f"Error parsing expires_at: {e}")
                 return None
             
-            # Check if token is expired or expiring soon (within 5 minutes)
-            buffer_time = timedelta(minutes=5)
+            # Check if token is expired or expiring soon (within 1 minute)
+            buffer_time = timedelta(minutes=1)
             if timezone.now() + buffer_time >= expires_at:
                 # Token is expired or expiring soon, try to refresh it
                 refresh_token = token_data.get('refresh_token')
                 if refresh_token:
                     try:
                         logger.info("Refreshing token automatically")
-                        client = ScalekitClient()
+                        client = scalekit_client()
                         token_response = client.refresh_access_token(refresh_token)
                         
                         # Update session with new tokens
