@@ -105,19 +105,24 @@ def callback_view(request):
         logger.debug(f"Token response keys: {list(token_response.keys())}")
         logger.debug(f"Has refresh_token: {bool(refresh_token)}")
         
-        # Get user information
+        # Get user object from authenticate_with_code response
+        # The SDK's authenticate_with_code already extracts user info from ID token
+        user_obj = token_response.get('user', {})
+        
+        # Get user information from access token for roles and permissions
         user_info = client.get_user_info(access_token)
         
-        # Store user and token information in session (no database)
+        # Map user object fields (camelCase) to our session format (snake_case)
+        # user object has: id, name, email, givenName, familyName, username, etc.
         expires_at = timezone.now() + timedelta(seconds=expires_in)
         request.session['scalekit_user'] = {
-            'sub': user_info.get('sub'),
-            'email': user_info.get('email'),
-            'name': user_info.get('name'),
-            'given_name': user_info.get('given_name'),
-            'family_name': user_info.get('family_name'),
-            'preferred_username': user_info.get('preferred_username'),
-            'claims': user_info,  # Store all claims
+            'sub': user_obj.get('id'),
+            'email': user_obj.get('email'),
+            'name': user_obj.get('name'),
+            'given_name': user_obj.get('givenName'),
+            'family_name': user_obj.get('familyName'),
+            'preferred_username': user_obj.get('username'),
+            'claims': user_info,  # Store all claims from access token
         }
         request.session['scalekit_tokens'] = {
             'access_token': access_token,
@@ -127,13 +132,13 @@ def callback_view(request):
             'expires_in': expires_in,
         }
         
-        # Extract roles and permissions from user info
+        # Extract roles and permissions from access token claims
         roles = user_info.get('roles', []) or user_info.get('https://scalekit.com/roles', [])
         permissions = user_info.get('permissions', []) or user_info.get('https://scalekit.com/permissions', [])
         request.session['scalekit_roles'] = roles
         request.session['scalekit_permissions'] = permissions
         
-        logger.info(f"User {user_info.get('email')} authenticated successfully via Scalekit")
+        logger.info(f"User {user_obj.get('email')} authenticated successfully via Scalekit")
         
         # Redirect to dashboard
         return redirect('auth_app:dashboard')

@@ -38,6 +38,33 @@ class ScalekitClient:
         self.redirect_uri = settings.SCALEKIT_REDIRECT_URI
         self.scopes = settings.SCALEKIT_SCOPES.split() if settings.SCALEKIT_SCOPES else ['openid', 'profile', 'email', 'offline_access']
         
+        # Validate required settings before initializing SDK
+        if not self.domain:
+            raise ValueError(
+                "SCALEKIT_ENV_URL or SCALEKIT_ENVIRONMENT_URL is not set. Please set it in your .env file or environment variables.\n"
+                "Example: SCALEKIT_ENV_URL=https://your-env.scalekit.io\n"
+                "Or: SCALEKIT_ENVIRONMENT_URL=https://your-env.scalekit.io\n"
+                "See .env.example for a template."
+            )
+        if not self.client_id:
+            raise ValueError(
+                "SCALEKIT_CLIENT_ID is not set. Please set it in your .env file or environment variables.\n"
+                "Get your client ID from https://app.scalekit.com\n"
+                "See .env.example for a template."
+            )
+        if not self.client_secret:
+            raise ValueError(
+                "SCALEKIT_CLIENT_SECRET is not set. Please set it in your .env file or environment variables.\n"
+                "Get your client secret from https://app.scalekit.com\n"
+                "See .env.example for a template."
+            )
+        if not self.redirect_uri:
+            raise ValueError(
+                "SCALEKIT_REDIRECT_URI is not set. Please set it in your .env file or environment variables.\n"
+                "Example: SCALEKIT_REDIRECT_URI=http://localhost:8000/auth/callback\n"
+                "See .env.example for a template."
+            )
+        
         # Initialize official Scalekit SDK client
         self.sdk_client = SDKClient(
             env_url=self.domain,
