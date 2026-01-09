@@ -280,3 +280,23 @@ class ScalekitClient:
             logger.error(f"Error checking permission: {e}")
             return False
 
+
+# Module-level singleton instance for reuse throughout the application
+# Since ScalekitClient is stateless (configuration-based), a single instance
+# can be safely shared across all requests and views.
+_client_instance = None
+
+
+def scalekit_client():
+    """
+    Get the shared ScalekitClient instance.
+    Creates it on first access (lazy initialization).
+    
+    Returns:
+        ScalekitClient: The shared client instance
+    """
+    global _client_instance
+    if _client_instance is None:
+        _client_instance = ScalekitClient()
+    return _client_instance
+

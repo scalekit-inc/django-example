@@ -5,7 +5,7 @@ from functools import wraps
 from django.shortcuts import redirect
 from django.http import HttpResponseForbidden
 from django.conf import settings
-from auth_app.scalekit_client import ScalekitClient
+from auth_app.scalekit_client import scalekit_client
 
 
 def login_required(view_func):
@@ -53,7 +53,7 @@ def permission_required(permission):
                 return HttpResponseForbidden("No access token found. Please log in again.")
             
             # Check permission using Scalekit SDK
-            client = ScalekitClient()
+            client = scalekit_client()
             if not client.has_permission(access_token, permission):
                 from django.shortcuts import render
                 return render(
