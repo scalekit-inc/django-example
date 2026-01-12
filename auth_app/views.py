@@ -112,13 +112,29 @@ def callback_view(request):
         # Get user information from access token for roles and permissions
         user_info = client.get_user_info(access_token)
         
+        # Get name from multiple sources
+        name = user_obj.get('name') or user_obj.get('username', '')
+        if not name:
+            # Try to construct name from givenName and familyName
+            given_name = user_obj.get('givenName', '')
+            family_name = user_obj.get('familyName', '')
+            if given_name or family_name:
+                name = f"{given_name} {family_name}".strip()
+            else:
+                # Try to get from user_info claims
+                name = user_info.get('name') or user_info.get('preferred_username', '')
+        
+        # Fallback to email if name is still empty
+        if not name:
+            name = user_obj.get('email', '')
+        
         # Map user object fields (camelCase) to our session format (snake_case)
         # user object has: id, name, email, givenName, familyName, username, etc.
         expires_at = timezone.now() + timedelta(seconds=expires_in)
         request.session['scalekit_user'] = {
             'sub': user_obj.get('id'),
             'email': user_obj.get('email'),
-            'name': user_obj.get('name'),
+            'name': name,
             'given_name': user_obj.get('givenName'),
             'family_name': user_obj.get('familyName'),
             'preferred_username': user_obj.get('username'),
@@ -169,9 +185,26 @@ def dashboard_view(request):
         except:
             pass
     
+    # Get name from multiple sources
+    name = user_data.get('name') or user_data.get('preferred_username', '')
+    if not name:
+        # Try to construct name from given_name and family_name
+        given_name = user_data.get('given_name', '')
+        family_name = user_data.get('family_name', '')
+        if given_name or family_name:
+            name = f"{given_name} {family_name}".strip()
+        else:
+            # Try to get from claims
+            claims = user_data.get('claims', {})
+            name = claims.get('name') or claims.get('preferred_username', '')
+    
+    # Fallback to email or 'User' if name is still empty
+    if not name:
+        name = user_data.get('email', 'User')
+    
     context = {
         'user': user_data,
-        'name': user_data.get('name', 'User'),
+        'name': name,
         'email': user_data.get('email', ''),
         'subject': user_data.get('sub', ''),
         'claims': user_data.get('claims', {}),
