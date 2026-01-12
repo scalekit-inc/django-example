@@ -193,12 +193,13 @@ def logout_view(request):
     """
     token_data = request.session.get('scalekit_tokens', {})
     access_token = token_data.get('access_token')
+    id_token = token_data.get('id_token')
     
     # Get logout URL from Scalekit SDK
     if access_token:
         try:
             client = scalekit_client()
-            logout_url = client.logout(access_token)
+            logout_url = client.logout(access_token, id_token)
             # Redirect to Scalekit logout URL instead of just clearing session
             # This ensures proper logout on Scalekit side
             request.session.flush()

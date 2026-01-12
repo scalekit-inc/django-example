@@ -213,7 +213,7 @@ class ScalekitClient:
         buffer_time = timedelta(minutes=5)
         return timezone.now() + buffer_time >= expires_at
 
-    def logout(self, access_token):
+    def logout(self, access_token, id_token=None):
         """
         Get logout URL using Scalekit SDK.
         
@@ -221,24 +221,23 @@ class ScalekitClient:
         
         Args:
             access_token: Current access token (not used in SDK, but kept for compatibility)
+            id_token: ID token to send as id_token_hint for proper OIDC logout
             
         Returns:
             str: Logout URL (caller should redirect user to this URL)
         """
-        try:
-            from scalekit.common.scalekit import LogoutUrlOptions
-            
-            options = LogoutUrlOptions()
-            options.post_logout_redirect_uri = settings.SCALEKIT_REDIRECT_URI.replace('/auth/callback', '')
-            
-            # Use official SDK method to get logout URL
-            logout_url = self.sdk_client.get_logout_url(options)
-            return logout_url
-            
-        except Exception as e:
-            logger.error(f"Logout URL generation failed: {e}")
-            # Fallback to basic logout URL
-            return f"{self.domain}/oidc/logout"
+        from scalekit.common.scalekit import LogoutUrlOptions
+        
+        options = LogoutUrlOptions()
+        options.post_logout_redirect_uri = settings.SCALEKIT_REDIRECT_URI.replace('/auth/callback', '')
+        
+        # Set id_token_hint if ID token is provided
+        if id_token:
+            options.id_token_hint = id_token
+        
+        # Use official SDK method to get logout URL
+        logout_url = self.sdk_client.get_logout_url(options)
+        return logout_url
 
     def validate_token_and_get_claims(self, access_token):
         """
