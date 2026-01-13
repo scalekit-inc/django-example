@@ -82,17 +82,6 @@
             </div>
 
             <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Quick Actions</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-outline-secondary" onclick="window.print()">Print Dashboard</button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="card mt-3">
                     <div class="card-header">
                         <h6 class="mb-0">Session Status</h6>
@@ -126,37 +115,6 @@
                     </div>
                 </div>
 
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h6 class="mb-0">Token Values</h6>
-                    </div>
-                    <div class="card-body">
-                        <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#tokenValues" aria-expanded="false" aria-controls="tokenValues">
-                            <span id="tokenToggleText">Show</span> Tokens
-                        </button>
-                        <div class="collapse mt-2" id="tokenValues">
-                            {% if access_token %}
-                            <div class="mb-2">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small><strong>Access Token:</strong></small>
-                                    <button class="btn btn-xs btn-outline-primary btn-sm" onclick="copyToClipboard('accessToken')">Copy</button>
-                                </div>
-                                <div class="p-2 bg-light border rounded" style="word-break: break-all; font-family: monospace; font-size: 0.75em;" id="accessToken">{{ access_token }}</div>
-                            </div>
-                            {% endif %}
-                            
-                            {% if refresh_token %}
-                            <div class="mb-2">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small><strong>Refresh Token:</strong></small>
-                                    <button class="btn btn-xs btn-outline-primary btn-sm" onclick="copyToClipboard('refreshToken')">Copy</button>
-                                </div>
-                                <div class="p-2 bg-light border rounded" style="word-break: break-all; font-family: monospace; font-size: 0.75em;" id="refreshToken">{{ refresh_token }}</div>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -208,38 +166,6 @@
     <script>
         document.getElementById('session-time').textContent = new Date().toLocaleString();
 
-        function copyToClipboard(elementId) {
-            const element = document.getElementById(elementId);
-            const text = element.textContent;
-            
-            navigator.clipboard.writeText(text).then(function() {
-                const button = event.target;
-                const originalText = button.textContent;
-                button.textContent = 'Copied!';
-                button.classList.remove('btn-outline-primary');
-                button.classList.add('btn-success');
-                
-                setTimeout(function() {
-                    button.textContent = originalText;
-                    button.classList.remove('btn-success');
-                    button.classList.add('btn-outline-primary');
-                }, 2000);
-            }).catch(function(err) {
-                console.error('Failed to copy: ', err);
-                alert('Failed to copy to clipboard');
-            });
-        }
-
-        // Update toggle button text
-        const tokenCollapse = document.getElementById('tokenValues');
-        if (tokenCollapse) {
-            tokenCollapse.addEventListener('show.bs.collapse', function() {
-                document.getElementById('tokenToggleText').textContent = 'Hide';
-            });
-            tokenCollapse.addEventListener('hide.bs.collapse', function() {
-                document.getElementById('tokenToggleText').textContent = 'Show';
-            });
-        }
     </script>
 </body>
 </html>
